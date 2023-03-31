@@ -1,8 +1,8 @@
-FROM golang:1.18
+FROM debian:buster
 
 WORKDIR /go/src/app
 COPY . .
 
 RUN echo $(pwd)
 
-CMD ["go", "run", "."]
+CMD ["./golang-cp-exec"]

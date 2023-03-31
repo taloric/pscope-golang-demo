@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 
 	"rideshare/bike"
@@ -64,6 +65,12 @@ func main() {
 	defer func() {
 		_ = tp.Shutdown(context.Background())
 	}()
+
+	if len(profileTypes) > len(pyroscope.DefaultProfileTypes) {
+		// when len profileTypes > default, assume it's profiling everything
+		runtime.SetMutexProfileFraction(pyroscope.DefaultSampleRate)
+		runtime.SetBlockProfileRate(pyroscope.DefaultSampleRate)
+	}
 
 	_, err := pyroscope.Start(pyroscope.Config{
 		ApplicationName: appName,
@@ -125,7 +132,7 @@ func stringsToProfileTypes(profileTypes string) []pyroscope.ProfileType {
 	profileTypesSlice := strings.Split(profileTypes, ",")
 	profileTypesArray := make([]pyroscope.ProfileType, 0, len(profileTypesSlice))
 	for _, profileType := range profileTypesSlice {
-		profileTypesArray = append(profileTypesArray, pyroscope.ProfileType(profileType))
+		profileTypesArray = append(profileTypesArray, pyroscope.ProfileType(strings.Trim(profileType, " ")))
 	}
 	return profileTypesArray
 }
